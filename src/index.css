@@ -593,3 +593,38 @@ body[data-theme="light"] .guide-toggle { background: var(--card); }
   margin-top: 12px !important;
   text-align: left;
 }
+
+/* lišta s výzvou k instalaci na plochu */
+.install-bar {
+  margin: 0 16px 14px;
+  background: var(--card);
+  border: 0.5px solid var(--accent);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.install-text { display: flex; flex-direction: column; gap: 3px; }
+.install-text strong { font-size: 14px; font-weight: 600; color: var(--text); }
+.install-text span { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.install-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.install-yes {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.install-no {
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
