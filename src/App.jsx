@@ -10,6 +10,7 @@ import { requestPermission, startReminders, stopReminders, remainingMs } from '.
 import { tipAt, TIPS } from './tips'
 import { HEALTH_MILESTONES, milestoneStatus } from './milestones'
 import InstallPrompt from './InstallPrompt'
+import Onboarding from './Onboarding'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Legend, Cell,
   Tooltip, ResponsiveContainer, CartesianGrid
@@ -385,6 +386,14 @@ export default function App() {
 
   if (!settings || !stats) return <div className="loading">Načítám…</div>
 
+  // úvodní průvodce při prvním spuštění
+  async function finishOnboarding(values) {
+    for (const [key, value] of Object.entries(values)) {
+      await setSetting(key, value)
+    }
+    setSettings(await getSettings())
+  }
+
   // barvy grafů podle tématu (Recharts potřebuje konkrétní hodnoty)
   const light = settings.theme === 'light'
   const cGrid = light ? '#e2e8f0' : '#243352'
@@ -395,6 +404,9 @@ export default function App() {
 
   return (
     <div className="app">
+      {!settings.onboarded && (
+        <Onboarding defaults={settings} onDone={finishOnboarding} />
+      )}
       <header>
         <h1>🚬 Lessmoke</h1>
       </header>

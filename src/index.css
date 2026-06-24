@@ -628,3 +628,96 @@ body[data-theme="light"] .guide-toggle { background: var(--card); }
   font-size: 13px;
   cursor: pointer;
 }
+
+/* úvodní průvodce (onboarding) */
+.onb-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.onb-card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+}
+.onb-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.onb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--card2);
+  transition: all 0.2s;
+}
+.onb-dot.on { background: var(--accent); width: 24px; border-radius: 4px; }
+.onb-dot.done { background: var(--accent); opacity: 0.5; }
+.onb-step {
+  text-align: center;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.onb-emoji { font-size: 48px; margin-bottom: 16px; }
+.onb-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.onb-text {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.onb-field {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card);
+  border: 0.5px solid var(--card2);
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  color: var(--text);
+  font-size: 15px;
+}
+.onb-field input {
+  width: 90px;
+  padding: 9px;
+  border-radius: 8px;
+  border: 0.5px solid var(--card2);
+  background: var(--bg);
+  color: var(--text);
+  text-align: right;
+  font-size: 16px;
+}
+.onb-btn {
+  width: 100%;
+  padding: 17px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  margin-top: 8px;
+}
+.onb-skip {
+  width: 100%;
+  padding: 12px;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  margin-top: 8px;
+}

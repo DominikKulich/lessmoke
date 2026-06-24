@@ -21,7 +21,8 @@ const DEFAULT_SETTINGS = {
   dailyGoal: 0,           // denní limit cigaret (0 = vypnuto)
   weeklyGoal: 0,          // týdenní limit cigaret (0 = vypnuto)
   theme: 'dark',          // 'dark' nebo 'light'
-  baselinePerDay: 0       // kolik cigaret denně jsem kouřil dřív (pro výpočet ušetřeno)
+  baselinePerDay: 0,      // kolik cigaret denně jsem kouřil dřív (pro výpočet ušetřeno)
+  onboarded: false        // dokončil uživatel úvodní nastavení?
 }
 
 export async function getSettings() {
