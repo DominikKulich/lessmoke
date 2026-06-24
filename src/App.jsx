@@ -9,7 +9,7 @@ import {
 import { requestPermission, startReminders, stopReminders, remainingMs } from './notifications'
 import { tipAt, TIPS } from './tips'
 import { HEALTH_MILESTONES, milestoneStatus } from './milestones'
-import InstallPrompt from './InstallPrompt'
+import { InstallBar, InstallButton } from './InstallPrompt'
 import Onboarding from './Onboarding'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Legend, Cell,
@@ -411,7 +411,7 @@ export default function App() {
         <h1>🚬 Lessmoke</h1>
       </header>
 
-      <InstallPrompt />
+      <InstallBar />
 
       {tab === 'home' && (
         <main>
@@ -732,6 +732,9 @@ export default function App() {
             Reset smaže příslušné záznamy cigaret. Kompletní reset navíc vynuluje
             i rekord nejdelší pauzy. Tuto akci nelze vrátit zpět.
           </p>
+
+          <h2 style={{ marginTop: 24 }}>Aplikace</h2>
+          <InstallButton />
 
           <h2 style={{ marginTop: 24 }}>Záloha dat</h2>
           <button className="reset-btn" onClick={handleExport}>

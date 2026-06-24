@@ -1,71 +1,107 @@
 import { useState, useEffect } from 'react'
 
-// Lišta, která nabídne přidání appky na plochu.
-// Na Androidu/Chrome využívá událost beforeinstallprompt (nativní dialog).
-// Na iOS (Safari) tato událost neexistuje, proto tam ukáže ruční návod.
-export default function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null)
-  const [show, setShow] = useState(false)
-  const [isIOS, setIsIOS] = useState(false)
+// Sdílený stav instalace pro celou appku (lišta i tlačítko v nastavení).
+let deferredPromptGlobal = null
+const listeners = new Set()
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    deferredPromptGlobal = e
+    listeners.forEach(fn => fn())
+  })
+  window.addEventListener('appinstalled', () => {
+    deferredPromptGlobal = null
+    listeners.forEach(fn => fn())
+  })
+}
+
+function useInstall() {
+  const [, force] = useState(0)
   useEffect(() => {
-    // už nainstalováno (běží ve standalone režimu)? nic nenabízej
-    const standalone = window.matchMedia('(display-mode: standalone)').matches
-      || window.navigator.standalone === true
-    if (standalone) return
-
-    // uživatel už lištu zavřel? respektuj to
-    if (localStorage.getItem('lessmoke_install_dismissed') === '1') return
-
-    // detekce iOS (Safari nepodporuje beforeinstallprompt)
-    const ios = /iphone|ipad|ipod/i.test(window.navigator.userAgent)
-    if (ios) {
-      setIsIOS(true)
-      setShow(true)
-      return
-    }
-
-    // Android/Chrome: zachyť nabídku instalace
-    const handler = (e) => {
-      e.preventDefault()
-      setDeferredPrompt(e)
-      setShow(true)
-    }
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    const fn = () => force(n => n + 1)
+    listeners.add(fn)
+    return () => listeners.delete(fn)
   }, [])
 
-  async function handleInstall() {
-    if (!deferredPrompt) return
-    deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    if (outcome === 'accepted' || outcome === 'dismissed') {
-      setShow(false)
-      setDeferredPrompt(null)
+  const standalone = typeof window !== 'undefined' &&
+    (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
+  const isIOS = typeof window !== 'undefined' && /iphone|ipad|ipod/i.test(window.navigator.userAgent)
+
+  async function install() {
+    if (deferredPromptGlobal) {
+      deferredPromptGlobal.prompt()
+      await deferredPromptGlobal.userChoice
+      deferredPromptGlobal = null
+      listeners.forEach(fn => fn())
+      return 'prompted'
     }
+    // Chrome nabídku neposlal, ale appka může jít nainstalovat ručně
+    return isIOS ? 'ios' : 'manual'
   }
 
-  function handleDismiss() {
+  return { canPrompt: !!deferredPromptGlobal, standalone, isIOS, install }
+}
+
+// Lišta nahoře na hlavní stránce - jen pro nové (neinstalované) uživatele
+export function InstallBar() {
+  const { standalone, isIOS, install } = useInstall()
+  const [show, setShow] = useState(true)
+  const [hint, setHint] = useState('')
+
+  if (standalone) return null // už nainstalováno
+  if (!show) return null
+  if (localStorage.getItem('lessmoke_install_dismissed') === '1') return null
+
+  async function onAdd() {
+    const r = await install()
+    if (r === 'manual') setHint('Otevři menu prohlížeče (⋮) a vyber „Přidat na plochu".')
+    else if (r === 'ios') setHint('V Safari klepni na „Sdílet" a pak „Přidat na plochu".')
+    else setShow(false)
+  }
+  function onClose() {
     setShow(false)
     localStorage.setItem('lessmoke_install_dismissed', '1')
   }
-
-  if (!show) return null
 
   return (
     <div className="install-bar">
       <div className="install-text">
         <strong>📲 Přidat Lessmoke na plochu</strong>
-        {isIOS
-          ? <span>V Safari klepni na „Sdílet" a pak „Přidat na plochu".</span>
+        {hint
+          ? <span>{hint}</span>
           : <span>Měj appku po ruce jako ikonu a využij notifikace.</span>}
       </div>
       <div className="install-actions">
-        {!isIOS && (
-          <button className="install-yes" onClick={handleInstall}>Přidat</button>
-        )}
-        <button className="install-no" onClick={handleDismiss}>Teď ne</button>
+        {!isIOS && <button className="install-yes" onClick={onAdd}>Přidat</button>}
+        <button className="install-no" onClick={onClose}>Teď ne</button>
       </div>
     </div>
+  )
+}
+
+// Tlačítko do nastavení - vždy dostupné
+export function InstallButton() {
+  const { standalone, isIOS, install } = useInstall()
+  const [hint, setHint] = useState('')
+
+  if (standalone) {
+    return <p className="note">✓ Lessmoke je nainstalovaný na ploše.</p>
+  }
+
+  async function onAdd() {
+    const r = await install()
+    if (r === 'manual') setHint('Chrome teď nenabídl automatickou instalaci. Otevři menu prohlížeče (⋮) a vyber „Přidat na plochu" / „Instalovat aplikaci".')
+    else if (r === 'ios') setHint('V Safari klepni dole na „Sdílet" a pak „Přidat na plochu".')
+    else setHint('')
+  }
+
+  return (
+    <>
+      <button className="reset-btn" onClick={onAdd}>
+        📲 Přidat appku na plochu
+      </button>
+      {hint && <p className="note">{hint}</p>}
+    </>
   )
 }
