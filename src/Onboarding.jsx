@@ -51,8 +51,7 @@ export default function Onboarding({ defaults, onDone }) {
             <div className="onb-emoji">⏰</div>
             <h2 className="onb-title">Interval připomínek</h2>
             <p className="onb-text">
-              Jak často ti má appka připomenout? Nastav rozumný odstup — appka
-              tě upozorní, až uplyne. Můžeš to kdykoli změnit v nastavení.
+              Jak často tě má aplikace upozornit, že si máš dát cigaretu? Nastav interval, v nastavení ho můžeš kdykoliv změnit.
             </p>
             <label className="onb-field">
               <span>Interval (minuty)</span>
