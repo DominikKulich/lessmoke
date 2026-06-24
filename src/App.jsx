@@ -112,12 +112,14 @@ export default function App() {
   useEffect(() => {
     if (!settings) return
     if (settings.remindersOn) {
+      // naváže na uložený cíl (přežije obnovení stránky), jinak začne nový interval
       startReminders(settings.reminderMinutes, (ms) => setCountdown(ms))
     } else {
-      stopReminders()
+      stopReminders() // vypnuto = zastavit i smazat uložený cíl
       setCountdown(null)
     }
-    return () => stopReminders()
+    // cleanup jen zastaví časovač, uložený cíl nechá být (kvůli obnovení stránky)
+    return () => stopReminders(false)
   }, [settings?.remindersOn, settings?.reminderMinutes])
 
   // automatická rotace tipů každých 12 sekund
@@ -276,9 +278,9 @@ export default function App() {
     if (navigator.vibrate) navigator.vibrate(30) // jemná zpětná vazba
     await addCigarette(note)
     await reload()
-    // odpočet do další připomínky běží od poslední cigarety (restart intervalu)
+    // odpočet do další připomínky běží od poslední cigarety (restart na plný interval)
     if (settings?.remindersOn) {
-      startReminders(settings.reminderMinutes, (ms) => setCountdown(ms))
+      startReminders(settings.reminderMinutes, (ms) => setCountdown(ms), true)
     }
   }
   async function handleSmokeWithNote() {

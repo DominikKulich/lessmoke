@@ -6,6 +6,9 @@
 let timerId = null
 let targetTime = null
 
+const STORAGE_KEY = 'lessmoke_reminder_target'
+const STORAGE_INTERVAL = 'lessmoke_reminder_interval'
+
 export async function requestPermission() {
   if (!('Notification' in window)) return 'unsupported'
   if (Notification.permission === 'granted') return 'granted'
@@ -14,10 +17,23 @@ export async function requestPermission() {
 
 // Spustí opakovaný odpočet. Po každém uplynutí intervalu vyjede notifikace
 // a odpočet se rozjede znovu. onTick(zbyvaMs) se volá každou sekundu (pro UI).
-export function startReminders(minutes, onTick) {
-  stopReminders()
+// Pokud je uložený platný cíl z minula (přežil obnovení stránky) a interval se
+// nezměnil, pokračuje od něj místo restartu na plný interval.
+export function startReminders(minutes, onTick, forceRestart = false) {
+  stopReminders(false)
   const intervalMs = minutes * 60 * 1000
-  targetTime = Date.now() + intervalMs
+
+  // pokus o navázání na uložený cíl (jen když sedí i interval)
+  const saved = Number(localStorage.getItem(STORAGE_KEY))
+  const savedInterval = Number(localStorage.getItem(STORAGE_INTERVAL))
+  const intervalMatches = savedInterval === minutes
+  if (!forceRestart && saved && saved > Date.now() && intervalMatches) {
+    targetTime = saved // pokračuj tam, kde jsi přestal
+  } else {
+    targetTime = Date.now() + intervalMs
+    localStorage.setItem(STORAGE_KEY, String(targetTime))
+    localStorage.setItem(STORAGE_INTERVAL, String(minutes))
+  }
 
   timerId = setInterval(async () => {
     const remaining = targetTime - Date.now()
@@ -25,13 +41,18 @@ export function startReminders(minutes, onTick) {
     if (remaining <= 0) {
       await fireNotification()
       targetTime = Date.now() + intervalMs // další kolo
+      localStorage.setItem(STORAGE_KEY, String(targetTime))
     }
   }, 1000)
 }
 
-export function stopReminders() {
+export function stopReminders(clearSaved = true) {
   if (timerId) { clearInterval(timerId); timerId = null }
   targetTime = null
+  if (clearSaved) {
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(STORAGE_INTERVAL)
+  }
 }
 
 // Kolik zbývá do další notifikace (ms), nebo null když je odpočet vypnutý
