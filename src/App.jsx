@@ -9,6 +9,7 @@ import {
 import { requestPermission, startReminders, stopReminders, remainingMs } from './notifications'
 import { tipAt, TIPS } from './tips'
 import { HEALTH_MILESTONES, milestoneStatus } from './milestones'
+import InstallPrompt from './InstallPrompt'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Legend, Cell,
   Tooltip, ResponsiveContainer, CartesianGrid
@@ -397,6 +398,8 @@ export default function App() {
       <header>
         <h1>🚬 Lessmoke</h1>
       </header>
+
+      <InstallPrompt />
 
       {tab === 'home' && (
         <main>
